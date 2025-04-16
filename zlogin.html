@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Page</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="zlogin.css" />
+</head>
+<body>
+
+<div class="container">
+  <h2>Login and Export</h2>
+
+  <!-- ✅ Login Form -->
+  <form class="login-form" id="login-form">
+    <input id="name" type="text" placeholder="Name" required />
+    <input id="phone" type="tel" placeholder="Phone" required />
+    <input id="email" type="email" placeholder="Email" required />
+
+    <!-- ✅ State Dropdown -->
+    <select id="state" required>
+      <option value="">Select State</option>
+      <option value="Andhra Pradesh">Andhra Pradesh</option>
+      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+      <option value="Assam">Assam</option>
+      <option value="Bihar">Bihar</option>
+      <option value="Chhattisgarh">Chhattisgarh</option>
+      <option value="Goa">Goa</option>
+      <option value="Gujarat">Gujarat</option>
+      <option value="Haryana">Haryana</option>
+      <option value="Himachal Pradesh">Himachal Pradesh</option>
+      <option value="Jharkhand">Jharkhand</option>
+      <option value="Karnataka">Karnataka</option>
+      <option value="Kerala">Kerala</option>
+      <option value="Madhya Pradesh">Madhya Pradesh</option>
+      <option value="Maharashtra">Maharashtra</option>
+      <option value="Manipur">Manipur</option>
+      <option value="Meghalaya">Meghalaya</option>
+      <option value="Mizoram">Mizoram</option>
+      <option value="Nagaland">Nagaland</option>
+      <option value="Odisha">Odisha</option>
+      <option value="Punjab">Punjab</option>
+      <option value="Rajasthan">Rajasthan</option>
+      <option value="Sikkim">Sikkim</option>
+      <option value="Tamil Nadu">Tamil Nadu</option>
+      <option value="Telangana">Telangana</option>
+      <option value="Tripura">Tripura</option>
+      <option value="Uttar Pradesh">Uttar Pradesh</option>
+      <option value="Uttarakhand">Uttarakhand</option>
+      <option value="West Bengal">West Bengal</option>
+      <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+      <option value="Chandigarh">Chandigarh</option>
+      <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+      <option value="Lakshadweep">Lakshadweep</option>
+      <option value="Delhi">Delhi</option>
+      <option value="Puducherry">Puducherry</option>
+      <option value="Ladakh">Ladakh</option>
+      <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+    </select>
+
+    <input id="city" type="text" placeholder="City" required />
+    <input id="address" type="text" placeholder="Street Address" required />
+
+    <label>
+      Gift Box:
+      <input id="gift-box" type="checkbox" />
+    </label>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- ✅ Cart Summary -->
+  <h3>Order Summary</h3>
+  <ul id="cart-summary"></ul>
+  <div id="summary-total"></div>
+</div>
+
+<script>
+  const cart = new Map(JSON.parse(localStorage.getItem('cart')) || []);
+  let allOrders = JSON.parse(localStorage.getItem('allOrders')) || [];
+
+  // ✅ Display cart summary
+  function displayCartSummary() {
+    const cartSummary = document.getElementById('cart-summary');
+    const totalPriceElem = document.getElementById('summary-total');
+    cartSummary.innerHTML = '';
+    let total = 0;
+
+    if (cart.size === 0) {
+      cartSummary.innerHTML = '<li>No items in cart</li>';
+      totalPriceElem.textContent = '';
+      return;
+    }
+
+    cart.forEach((details, item) => {
+      const li = document.createElement('li');
+      li.innerHTML = `${item} - ₹${details.price} x ${details.quantity}`;
+      cartSummary.appendChild(li);
+      total += details.price * details.quantity;
+    });
+
+    totalPriceElem.textContent = `Total: ₹${total}`;
+  }
+
+  // ✅ Export all orders to Excel
+  function exportToExcel() {
+    const orders = JSON.parse(localStorage.getItem('allOrders')) || [];
+
+    const data = [
+      ["Name", "Phone", "Email", "State", "City", "Address", "Gift Box", "Item", "Price", "Quantity", "Total"]
+    ];
+
+    orders.forEach(order => {
+      order.items.forEach((item, index) => {
+        const row = index === 0
+          ? [order.name, order.phone, order.email, order.state, order.city, order.address, order.giftBox, item.item, item.price, item.quantity, order.total]
+          : ["", "", "", "", "", "", "", item.item, item.price, item.quantity, ""];
+        data.push(row);
+      });
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Order Details");
+    XLSX.writeFile(wb, "Order_Details.xlsx");
+  }
+
+  // ✅ Handle form submission
+  document.getElementById('login-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const order = {
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      state: document.getElementById('state').value,
+      city: document.getElementById('city').value,
+      address: document.getElementById('address').value,
+      giftBox: document.getElementById('gift-box').checked ? 'Yes' : 'No',
+      items: Array.from(cart.entries()).map(([item, details]) => ({
+        item,
+        price: details.price,
+        quantity: details.quantity
+      })),
+      total: Array.from(cart.values()).reduce((sum, item) => sum + item.price * item.quantity, 0),
+      status: "Order Confirmed"
+    };
+
+    allOrders.push(order);
+    localStorage.setItem('allOrders', JSON.stringify(allOrders));
+    localStorage.setItem('currentOrder', JSON.stringify(order));
+
+    exportToExcel();
+    localStorage.removeItem('cart');
+
+    setTimeout(() => {
+      window.location.href = './zorder.html';
+    }, 500);
+  });
+
+  document.addEventListener('DOMContentLoaded', displayCartSummary);
+</script>
+
+</body>
+</html>

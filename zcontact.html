@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact & Feedback - With Love</title>
+    <link rel="stylesheet" href="zcontact.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <img src="logo.jpg" alt="With Love Logo" class="logo">
+        <nav>
+            <ul>
+                <li><a href="#" onclick="redirectToHome()">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <script>
+        function redirectToHome() {
+            window.location.href = 'wl.html';
+        }
+    
+        function redirectToContact() {
+            window.location.href = 'zcontact.html';
+        }
+    </script>    
+
+    <section class="contact-feedback">
+        <div class="form-container">
+            <h2>Contact Us</h2>
+            <form id="contactForm">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+
+            <h2>Give Feedback</h2>
+            <form id="feedbackForm">
+                <label>Delivery Experience:</label>
+                <div class="stars" data-category="Delivery"></div>
+
+                <label>Product Experience:</label>
+                <div class="stars" data-category="Product"></div>
+
+                <label>User Experience:</label>
+                <div class="stars" data-category="User"></div>
+
+                <label>Punctuality:</label>
+                <div class="stars" data-category="Punctuality"></div>
+
+                <textarea name="comments" placeholder="Any comments..."></textarea>
+                <button type="submit">Submit Feedback</button>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // JavaScript to handle star rating
+        document.querySelectorAll('.stars').forEach(section => {
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.textContent = '★';
+                star.classList.add('star');
+                star.dataset.rating = i;
+                star.addEventListener('click', (e) => {
+                    const allStars = e.target.parentElement.querySelectorAll('.star');
+                    allStars.forEach(s => s.classList.remove('selected'));
+                    for (let j = 0; j < i; j++) {
+                        allStars[j].classList.add('selected');
+                    }
+                    e.target.parentElement.dataset.selected = i;
+                });
+                section.appendChild(star);
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
